@@ -49,16 +49,19 @@ void Cross::move(int Dir, int Len, int *X, int *Y)
 	}
 }
 
-void iniMap(string FileRoad);
-void Mapping(vector<string> Road,vector<string> Cross);
+void iniMap(string FileRoad, Cross *C, Road *R);
+void Mapping(vector<string> Ro,vector<string> Cr, Cross *C, Road *R);
 
 int main()
 {
+	Cross C[50];
+	Road R[100];
 	string FileRoad = "E://study//CPP//HuaweiTest//";
-	iniMap(FileRoad);
+	iniMap(FileRoad, &C[0], &R[0]);
+	return 0;
 }
 
-void iniMap(string File)
+void iniMap(string File, Cross *C, Road *R)
 {
 	string FileRoad = File + "Road.txt";
 	string FileCross = File + "Cross.txt";
@@ -105,15 +108,13 @@ void iniMap(string File)
 			}
 		}
 	}
-	Mapping(Ro,Cr);
+	Mapping(Ro, Cr, &C[0], &R[0]);
 	inR.close();
 	inC.close();
 }
 
-void Mapping(vector<string> Ro, vector<string> Cr)
+void Mapping(vector<string> Ro, vector<string> Cr, Cross *C, Road *R)
 {
-	Road R[100];
-	Cross C[50];
 	string s,Len;
 	int pos;
 	for (int i = 1; i <= Ro.size() - 1; i++)
@@ -266,4 +267,3 @@ void Mapping(vector<string> Ro, vector<string> Cr)
 	}
 
 }
-
