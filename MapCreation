@@ -1,1 +1,269 @@
+// HuaweiTest.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+//
+
+#include "pch.h"
+#include <stdlib.h>
+#include <iostream>
+#include<string>
+#include <cstdio>
+#include<vector>
+#include<fstream>  //ifstream
+
+using namespace std;
+class Road{
+	public:
+		string RoadNum;
+		int RoadLen;
+		string RoadC1;
+		string RoadC2;
+
+};
+
+class Cross{
+	public:
+		string CrossNum;
+		string RoadN[4];
+		int PosX;
+		int PosY;
+		int PosNum = 0;
+
+		void move(int Dir, int Len, int *X, int *Y);
+};
+
+void Cross::move(int Dir, int Len, int *X, int *Y)
+{
+	switch (Dir)
+	{
+		case 0:
+			*Y = *Y + Len;
+			break;
+		case 1:
+			*X = *X + Len;
+			break;
+		case 2:
+			*Y = *Y - Len;
+			break;
+		case 3:
+			*X = *X - Len;
+			break;
+	}
+}
+
+void iniMap(string FileRoad);
+void Mapping(vector<string> Road,vector<string> Cross);
+
+int main()
+{
+	string FileRoad = "E://study//CPP//HuaweiTest//";
+	iniMap(FileRoad);
+}
+
+void iniMap(string File)
+{
+	string FileRoad = File + "Road.txt";
+	string FileCross = File + "Cross.txt";
+	ifstream inR(FileRoad);
+	ifstream inC(FileCross);
+	vector<string> Cr,Ro;
+	string s;
+	int index;
+	if (inR.is_open())
+	{
+		while (!inR.eof())
+		{
+			getline(inR, s, ')');
+			index = 0;
+			if (!s.empty())
+			{
+				while ((index = s.find(' ', index)) != string::npos)
+				{
+					s.erase(index, 1);
+				}
+			}
+			if (s.size() > 1)
+			{
+				Ro.push_back(s);
+			}			
+		}
+	}
+	if (inC.is_open())
+	{
+		while (!inC.eof())
+		{
+			getline(inC, s, ')');
+			index = 0;
+			if (!s.empty())
+			{
+				while ((index = s.find(' ', index)) != string::npos)
+				{
+					s.erase(index, 1);
+				}
+			}
+			if (s.size() > 1)
+			{
+				Cr.push_back(s);
+			}
+		}
+	}
+	Mapping(Ro,Cr);
+	inR.close();
+	inC.close();
+}
+
+void Mapping(vector<string> Ro, vector<string> Cr)
+{
+	Road R[100];
+	Cross C[50];
+	string s,Len;
+	int pos;
+	for (int i = 1; i <= Ro.size() - 1; i++)
+	{
+		pos = 0;
+		s = Ro[i];
+		s.erase(0, 2);
+		pos = s.find(',');
+		R[i].RoadNum = s.substr(0, pos);
+		s.erase(0, pos+1);
+		pos = s.find(',');
+		Len = s.substr(0, pos);
+		R[i].RoadLen = strtol(Len.c_str(),NULL,10);
+		s.erase(0, pos + 1);
+		pos = s.find(',');
+		s.erase(0, pos + 1);
+		pos = s.find(',');
+		s.erase(0, pos + 1);
+		pos = s.find(',');
+		R[i].RoadC1 = s.substr(0, pos);
+		s.erase(0, pos + 1);
+		pos = s.find(',');
+		R[i].RoadC2 = s.substr(0, pos);
+	}
+	for (int i = 1; i <= Cr.size() - 1; i++)
+	{
+		pos = 0;
+		s = Cr[i];
+		s.erase(0, 2);
+		pos = s.find(',');
+		C[i].CrossNum = s.substr(0, pos);
+		s.erase(0, pos + 1);
+		for (int j = 0; j <= 2; j++)
+		{
+			pos = s.find(',');
+			C[i].RoadN[j] = s.substr(0, pos);
+			s.erase(0, pos + 1);
+		}
+		C[i].RoadN[3] = s;
+	}
+	int PosNum = 1;
+	for (int i = 1; i <= Ro.size() - 1; i++)
+	{
+		string s,t;
+		int a, j = 0, k = 0, l = 0;
+		int posX, posY;
+		s = R[i].RoadC1;
+		t = R[i].RoadC2;
+		a = 1;
+		while (j <= Cr.size() - 1 && a)
+		{
+			j++;
+			if (!strcmp(s.c_str(), C[j].CrossNum.c_str()))
+			{
+				a = 0;
+			}
+		}
+		a = 1;
+		while (k <= Cr.size() - 1 && a)
+		{
+			k++;
+			if (!strcmp(t.c_str(), C[k].CrossNum.c_str()))
+			{
+				a = 0;
+			}
+		}
+		a = 1;
+		l = -1;
+		while (l <= 3 && a)
+		{
+			l++;
+			if (!strcmp(C[j].RoadN[l].c_str(), R[i].RoadNum.c_str()))
+			{
+				a = 0;
+			}
+		}
+		if ((C[j].PosNum == 0) && (C[k].PosNum == 0))
+		{
+			C[j].PosNum = PosNum;
+			C[k].PosNum = PosNum;
+			C[j].PosX = 0;
+			C[j].PosY = 0;
+			C[k].PosX = 0;
+			C[k].PosY = 0;
+			C[k].move(l, R[i].RoadLen, &C[k].PosX, &C[k].PosY);
+			PosNum++;
+		}
+		else if ((C[j].PosNum == 0) && (C[k].PosNum != 0))
+		{
+			C[j].PosNum = C[k].PosNum;
+			C[j].PosX = C[k].PosX;
+			C[j].PosY = C[k].PosY;
+			C[j].move((l+2)%4, R[i].RoadLen, &C[j].PosX, &C[j].PosY);
+		}
+		else if ((C[j].PosNum != 0) && (C[k].PosNum == 0))
+		{
+			C[k].PosNum = C[j].PosNum;
+			C[k].PosX = C[j].PosX;
+			C[k].PosY = C[j].PosY;
+			C[k].move(l, R[i].RoadLen, &C[k].PosX, &C[k].PosY);
+		}
+		else
+		{
+			if (C[k].PosNum < C[j].PosNum)
+			{
+				int Larger = C[j].PosNum;				
+				int XChange, YChange;
+				int OriX = C[j].PosX;
+				int OriY = C[j].PosY;
+				C[j].PosX = C[k].PosX;
+				C[j].PosY = C[k].PosY;
+				C[j].move((l + 2) % 4, R[i].RoadLen, &C[j].PosX, &C[j].PosY);
+				C[j].PosNum = C[k].PosNum;
+				XChange = C[j].PosX - OriX;
+				YChange = C[j].PosY - OriY;
+				for (int loop = 1; loop <= Cr.size() - 1; loop++)
+				{
+					if (C[loop].PosNum == Larger)
+					{
+						C[loop].PosNum = C[k].PosNum;
+						C[loop].PosX = C[loop].PosX + XChange;
+						C[loop].PosY = C[loop].PosY + YChange;
+					}
+				}
+			}
+			else if (C[k].PosNum > C[j].PosNum)
+			{
+				int Larger = C[k].PosNum;
+				int XChange, YChange;
+				int OriX = C[k].PosX;
+				int OriY = C[k].PosY;
+				C[k].PosX = C[j].PosX;
+				C[k].PosY = C[j].PosY;
+				C[k].move((l + 2) % 4, R[i].RoadLen, &C[k].PosX, &C[k].PosY);
+				C[k].PosNum = C[j].PosNum;
+				XChange = C[k].PosX - OriX;
+				YChange = C[k].PosY - OriY;
+				for (int loop = 1; loop <= Cr.size() - 1; loop++)
+				{
+					if (C[loop].PosNum == Larger)
+					{
+						C[loop].PosNum = C[j].PosNum;
+						C[loop].PosX = C[loop].PosX + XChange;
+						C[loop].PosY = C[loop].PosY + YChange;
+					}
+				}
+			}
+		}
+		
+	}
+
+}
 
